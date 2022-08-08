@@ -1,0 +1,63 @@
+{
+    "type": "Microsoft.VirtualMachineImages",
+    "apiVersion": "2022-02-14",
+    "location": "<region_1>",
+    "dependsOn": [],
+    "tags": {
+        "imagebuilderTemplate": "<image_name>",
+        "userIdentity": "enabled"
+    },
+
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+            "/subscriptions/<subscription_id>/resourceGroups/<rg_name>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<id_name>": {}            
+        }
+    },
+    
+    "properties": {
+        "buildTimeoutInMinutes" : 90,
+        "vmProfile": 
+        {
+            "vmSize": "<image_build_sku>",
+            "osDiskSizeGB": <image_build_size>
+        },
+    
+        "source": {
+            "type": "PlatformImage",
+                "publisher": "<src_image_publisher>",
+                "offer": "<src_image_offer>",
+                "sku": "<src_image_sku>",
+                "version": "latest"
+        },
+        "customize": [
+            {
+                "type": "Shell",
+                "name": "setupBuildPath",
+                "inline": [
+                    "sudo apt-get -o DPkg::Lock::Timeout=-1 update && sudo apt-get -o DPkg::Lock::Timeout=-1 install -y gnupg software-properties-common curl ca-certificates apt-transport-https lsb-release",
+                    "curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -",
+                    "sudo apt-add-repository \"deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main\"",
+                    "curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null",
+                    "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
+                    "sudo apt-get -o DPkg::Lock::Timeout=-1 update  && sudo apt-get -o DPkg::Lock::Timeout=-1 install -y terraform azure-cli nginx"
+                ]
+            }
+        ],
+        "distribute": 
+        [
+            {   
+                "type": "SharedImage",
+                "galleryImageId": "/subscriptions/<subscription_id>/resourceGroups/<rg_name>/providers/Microsoft.Compute/galleries/<gallery_name>/images/<image_name>",
+                "runOutputName": "<image_name>",
+                "artifactTags": {
+                    "source": "azureVmImageBuilder",
+                    "baseosimg": "<image_name>"
+                },
+                "replicationRegions": [
+                  "<region_1>"
+                ]
+            }
+        ]
+    }
+}
