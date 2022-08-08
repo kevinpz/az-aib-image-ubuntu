@@ -4,6 +4,10 @@ trigger:
     include:
       - main
 
+# Use the Microsoft hosted runners
+pool:
+    vmImage: 'ubuntu-latest'
+
 # Load the pipeline template repo
 resources:
   repositories:
