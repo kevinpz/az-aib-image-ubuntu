@@ -16,12 +16,6 @@ resources:
     endpoint: Azure
     name: kevinpz/az-aib-pipeline-template
 
-
-
-steps:
-- checkout: self
-- checkout: az-aib-pipeline-template
-
 # Run the build pipeline
 extends:
   template: build-image.yml@az-aib-pipeline-template
